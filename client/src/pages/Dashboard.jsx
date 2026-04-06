@@ -1,9 +1,20 @@
-import { useMemo } from 'react';
+import { lazy, Suspense, useMemo, useState } from 'react';
 import { useExpenses } from '../hooks/useExpenses.js';
 import StatCard from '../components/StatCard.jsx';
-import CategoryPie from '../components/CategoryPie.jsx';
-import SpendLineChart from '../components/SpendLineChart.jsx';
 import { formatCurrency } from '../lib/format.js';
+import { exportExpensesCsv } from '../lib/csv.js';
+
+const CategoryPie = lazy(() => import('../components/CategoryPie.jsx'));
+const SpendLineChart = lazy(() => import('../components/SpendLineChart.jsx'));
+
+function ChartFallback({ height = 240 }) {
+  return (
+    <div
+      className="w-full rounded-lg bg-surface-2 animate-pulse"
+      style={{ height }}
+    />
+  );
+}
 
 function startOfMonth(d = new Date()) {
   return new Date(d.getFullYear(), d.getMonth(), 1);
@@ -22,6 +33,53 @@ const monthLabel = new Intl.DateTimeFormat('en-US', {
   month: 'long',
   year: 'numeric',
 }).format(new Date());
+
+const RANGES = {
+  '30D': { days: 30, label: 'Last 30 days', bucket: 'day' },
+  '90D': { days: 90, label: 'Last 90 days', bucket: 'day' },
+  '1Y': { days: 365, label: 'Last 12 months', bucket: 'month' },
+};
+
+function bucketByDay(expenses, days) {
+  const cutoff = daysAgo(days - 1);
+  const buckets = {};
+  for (let i = days - 1; i >= 0; i--) {
+    const d = daysAgo(i);
+    const key = d.toISOString().slice(0, 10);
+    buckets[key] = 0;
+  }
+  expenses.forEach((e) => {
+    const d = new Date(e.date);
+    if (d < cutoff) return;
+    const key = d.toISOString().slice(0, 10);
+    if (key in buckets) buckets[key] += Number(e.amount || 0);
+  });
+  return Object.entries(buckets).map(([key, value]) => ({
+    label: key.slice(5),
+    value: Math.round(value * 100) / 100,
+  }));
+}
+
+function bucketByMonth(expenses) {
+  const now = new Date();
+  const buckets = {};
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    buckets[key] = 0;
+  }
+  const cutoff = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+  expenses.forEach((e) => {
+    const d = new Date(e.date);
+    if (d < cutoff) return;
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    if (key in buckets) buckets[key] += Number(e.amount || 0);
+  });
+  return Object.entries(buckets).map(([key, value]) => ({
+    label: key.slice(2),
+    value: Math.round(value * 100) / 100,
+  }));
+}
 
 const Icon = {
   wallet: (
@@ -51,6 +109,7 @@ const Icon = {
 
 export default function Dashboard() {
   const { data, isLoading, isError, error } = useExpenses();
+  const [range, setRange] = useState('30D');
 
   const stats = useMemo(() => {
     const expenses = data ?? [];
@@ -77,23 +136,11 @@ export default function Dashboard() {
       }, {}),
     ).map(([name, value]) => ({ name, value }));
 
-    const cutoff = daysAgo(29);
-    const dayBuckets = {};
-    for (let i = 29; i >= 0; i--) {
-      const d = daysAgo(i);
-      const key = d.toISOString().slice(0, 10);
-      dayBuckets[key] = 0;
-    }
-    expenses.forEach((e) => {
-      const d = new Date(e.date);
-      if (d < cutoff) return;
-      const key = d.toISOString().slice(0, 10);
-      if (key in dayBuckets) dayBuckets[key] += Number(e.amount || 0);
-    });
-    const byDay = Object.entries(dayBuckets).map(([key, value]) => ({
-      label: key.slice(5),
-      value: Math.round(value * 100) / 100,
-    }));
+    const cfg = RANGES[range];
+    const series =
+      cfg.bucket === 'month'
+        ? bucketByMonth(expenses)
+        : bucketByDay(expenses, cfg.days);
 
     const top = [...byCategory].sort((a, b) => b.value - a.value)[0];
     const avg = thisMonth.length ? total / thisMonth.length : 0;
@@ -102,18 +149,23 @@ export default function Dashboard() {
       total,
       count: thisMonth.length,
       byCategory,
-      byDay,
+      series,
+      seriesLabel: cfg.label,
       topCategory: top?.name ?? '—',
       avg,
       deltaStr,
     };
-  }, [data]);
+  }, [data, range]);
 
   const valOrDash = (v) => (isLoading ? '—' : v);
 
+  const handleExport = () => {
+    if (!data || data.length === 0) return;
+    exportExpensesCsv(data, `smartspend-${new Date().toISOString().slice(0, 10)}.csv`);
+  };
+
   return (
     <div className="space-y-8">
-      {/* Page header */}
       <header className="flex items-end justify-between gap-4 flex-wrap">
         <div>
           <div className="text-xs text-fg-muted mb-1">Overview</div>
@@ -125,17 +177,16 @@ export default function Dashboard() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <button className="btn btn-ghost">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 6h18M7 12h10M10 18h4" />
-            </svg>
-            Filter
-          </button>
-          <button className="btn btn-ghost">
+          <button
+            type="button"
+            onClick={handleExport}
+            disabled={!data || data.length === 0}
+            className="btn btn-ghost disabled:opacity-40 disabled:cursor-not-allowed"
+          >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
             </svg>
-            Export
+            Export CSV
           </button>
         </div>
       </header>
@@ -157,7 +208,6 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Stat grid */}
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="fade-up fade-up-1">
           <StatCard
@@ -194,27 +244,37 @@ export default function Dashboard() {
         </div>
       </section>
 
-      {/* Chart row */}
       <section className="grid gap-4 lg:grid-cols-3">
         <article className="card p-5 lg:col-span-2 fade-up fade-up-3">
           <header className="flex items-baseline justify-between mb-4">
             <div>
               <h2 className="text-sm font-semibold text-fg">Spending over time</h2>
-              <div className="text-xs text-fg-muted mt-0.5">Last 30 days</div>
+              <div className="text-xs text-fg-muted mt-0.5">{stats.seriesLabel}</div>
             </div>
             <div className="flex items-center gap-1 text-xs">
-              <span className="px-2 py-1 rounded-md bg-surface-2 text-fg border border-border-2">
-                30D
-              </span>
-              <span className="px-2 py-1 rounded-md text-fg-muted hover:text-fg cursor-pointer">
-                90D
-              </span>
-              <span className="px-2 py-1 rounded-md text-fg-muted hover:text-fg cursor-pointer">
-                1Y
-              </span>
+              {Object.keys(RANGES).map((key) => {
+                const active = key === range;
+                return (
+                  <button
+                    type="button"
+                    key={key}
+                    onClick={() => setRange(key)}
+                    className={[
+                      'px-2 py-1 rounded-md transition-colors',
+                      active
+                        ? 'bg-surface-2 text-fg border border-border-2'
+                        : 'text-fg-muted hover:text-fg border border-transparent',
+                    ].join(' ')}
+                  >
+                    {key}
+                  </button>
+                );
+              })}
             </div>
           </header>
-          <SpendLineChart data={stats.byDay} />
+          <Suspense fallback={<ChartFallback />}>
+            <SpendLineChart data={stats.series} />
+          </Suspense>
         </article>
 
         <article className="card p-5 fade-up fade-up-4">
@@ -222,7 +282,9 @@ export default function Dashboard() {
             <h2 className="text-sm font-semibold text-fg">By category</h2>
             <div className="text-xs text-fg-muted mt-0.5">{monthLabel}</div>
           </header>
-          <CategoryPie data={stats.byCategory} />
+          <Suspense fallback={<ChartFallback height={220} />}>
+            <CategoryPie data={stats.byCategory} />
+          </Suspense>
         </article>
       </section>
     </div>
