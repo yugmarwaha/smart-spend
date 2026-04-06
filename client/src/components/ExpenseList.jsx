@@ -1,6 +1,7 @@
 import { useExpenses } from '../hooks/useExpenses.js';
 import ExpenseRow from './ExpenseRow.jsx';
 import { formatCurrency } from '../lib/format.js';
+import { TableRowSkeleton } from './Skeleton.jsx';
 
 function EmptyState() {
   return (
@@ -24,8 +25,18 @@ export default function ExpenseList() {
 
   if (isLoading) {
     return (
-      <div className="card p-12 text-center text-sm text-fg-muted">
-        Loading transactions…
+      <div className="card overflow-hidden">
+        <div className="px-5 py-4 border-b border-border">
+          <div className="h-4 w-32 bg-surface-2 rounded-md animate-pulse" />
+          <div className="h-3 w-24 bg-surface-2 rounded-md animate-pulse mt-2" />
+        </div>
+        <table className="w-full">
+          <tbody>
+            {Array.from({ length: 6 }).map((_, i) => (
+              <TableRowSkeleton key={i} />
+            ))}
+          </tbody>
+        </table>
       </div>
     );
   }

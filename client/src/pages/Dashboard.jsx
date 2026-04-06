@@ -1,6 +1,7 @@
 import { lazy, Suspense, useMemo, useState } from 'react';
 import { useExpenses } from '../hooks/useExpenses.js';
 import StatCard from '../components/StatCard.jsx';
+import { StatCardSkeleton } from '../components/Skeleton.jsx';
 import { formatCurrency } from '../lib/format.js';
 import { exportExpensesCsv } from '../lib/csv.js';
 
@@ -157,8 +158,6 @@ export default function Dashboard() {
     };
   }, [data, range]);
 
-  const valOrDash = (v) => (isLoading ? '—' : v);
-
   const handleExport = () => {
     if (!data || data.length === 0) return;
     exportExpensesCsv(data, `smartspend-${new Date().toISOString().slice(0, 10)}.csv`);
@@ -209,39 +208,45 @@ export default function Dashboard() {
       )}
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="fade-up fade-up-1">
-          <StatCard
-            title="Total spent"
-            value={valOrDash(formatCurrency(stats.total))}
-            trend={stats.deltaStr}
-            hint="vs. last month"
-            icon={Icon.wallet}
-          />
-        </div>
-        <div className="fade-up fade-up-2">
-          <StatCard
-            title="Transactions"
-            value={valOrDash(stats.count)}
-            hint="this month"
-            icon={Icon.list}
-          />
-        </div>
-        <div className="fade-up fade-up-3">
-          <StatCard
-            title="Average"
-            value={valOrDash(formatCurrency(stats.avg))}
-            hint="per transaction"
-            icon={Icon.trend}
-          />
-        </div>
-        <div className="fade-up fade-up-4">
-          <StatCard
-            title="Top category"
-            value={valOrDash(stats.topCategory)}
-            hint="by total spend"
-            icon={Icon.tag}
-          />
-        </div>
+        {isLoading ? (
+          Array.from({ length: 4 }).map((_, i) => <StatCardSkeleton key={i} />)
+        ) : (
+          <>
+            <div className="fade-up fade-up-1">
+              <StatCard
+                title="Total spent"
+                value={formatCurrency(stats.total)}
+                trend={stats.deltaStr}
+                hint="vs. last month"
+                icon={Icon.wallet}
+              />
+            </div>
+            <div className="fade-up fade-up-2">
+              <StatCard
+                title="Transactions"
+                value={stats.count}
+                hint="this month"
+                icon={Icon.list}
+              />
+            </div>
+            <div className="fade-up fade-up-3">
+              <StatCard
+                title="Average"
+                value={formatCurrency(stats.avg)}
+                hint="per transaction"
+                icon={Icon.trend}
+              />
+            </div>
+            <div className="fade-up fade-up-4">
+              <StatCard
+                title="Top category"
+                value={stats.topCategory}
+                hint="by total spend"
+                icon={Icon.tag}
+              />
+            </div>
+          </>
+        )}
       </section>
 
       <section className="grid gap-4 lg:grid-cols-3">
