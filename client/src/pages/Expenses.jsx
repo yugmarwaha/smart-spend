@@ -6,13 +6,35 @@ export default function Expenses() {
   const addMut = useAddExpense();
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Expenses</h1>
-        <p className="text-sm text-slate-500 mt-1">Add and manage your expenses.</p>
-      </div>
-      <ExpenseForm onSubmit={(payload) => addMut.mutate(payload)} busy={addMut.isPending} />
-      <ExpenseList />
+    <div className="space-y-8">
+      <header className="flex items-end justify-between gap-4 flex-wrap">
+        <div>
+          <div className="text-xs text-fg-muted mb-1">Activity</div>
+          <h1 className="text-2xl font-semibold tracking-tight text-fg">
+            Transactions
+          </h1>
+          <p className="text-sm text-fg-muted mt-1">
+            Record and manage every expense.
+          </p>
+        </div>
+      </header>
+
+      <section className="space-y-2 fade-up fade-up-1">
+        <div className="text-xs text-fg-muted px-1">New transaction</div>
+        <ExpenseForm
+          onSubmit={(payload) => addMut.mutate(payload)}
+          busy={addMut.isPending}
+        />
+        {addMut.isError && (
+          <div className="text-xs text-negative px-1">
+            {addMut.error?.message || 'Failed to add transaction'}
+          </div>
+        )}
+      </section>
+
+      <section className="fade-up fade-up-2">
+        <ExpenseList />
+      </section>
     </div>
   );
 }
