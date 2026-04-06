@@ -10,12 +10,12 @@ export const CATEGORIES = [
 ];
 
 export const CATEGORY_COLORS = {
-  Food: '#ef4444',
-  Transport: '#f59e0b',
-  Rent: '#6366f1',
-  Entertainment: '#ec4899',
-  Utilities: '#06b6d4',
-  Shopping: '#10b981',
-  Health: '#8b5cf6',
-  Other: '#64748b',
+  Food: '#f87171',
+  Transport: '#fb923c',
+  Rent: '#60a5fa',
+  Entertainment: '#c084fc',
+  Utilities: '#34d399',
+  Shopping: '#fbbf24',
+  Health: '#2dd4bf',
+  Other: '#94a3b8',
 };
