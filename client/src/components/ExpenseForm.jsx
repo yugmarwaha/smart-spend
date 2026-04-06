@@ -19,7 +19,7 @@ export default function ExpenseForm({
   initial,
   onSubmit,
   onCancel,
-  submitLabel = 'Add expense',
+  submitLabel = 'Add transaction',
   busy = false,
 }) {
   const [form, setForm] = useState(() => buildInitialForm(initial));
@@ -40,73 +40,91 @@ export default function ExpenseForm({
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="bg-white border border-slate-200 rounded-lg p-4 grid gap-3 sm:grid-cols-5"
-    >
-      <div className="sm:col-span-1">
-        <label className="block text-xs font-medium text-slate-600 mb-1">Amount</label>
-        <input
-          type="number"
-          step="0.01"
-          min="0"
-          required
-          value={form.amount}
-          onChange={update('amount')}
-          className="w-full border border-slate-300 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900"
-          placeholder="0.00"
-        />
-      </div>
-      <div className="sm:col-span-1">
-        <label className="block text-xs font-medium text-slate-600 mb-1">Category</label>
-        <select
-          value={form.category}
-          onChange={update('category')}
-          className="w-full border border-slate-300 rounded-md px-2 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-slate-900"
-        >
-          {CATEGORIES.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div className="sm:col-span-1">
-        <label className="block text-xs font-medium text-slate-600 mb-1">Date</label>
-        <input
-          type="date"
-          required
-          value={form.date}
-          onChange={update('date')}
-          className="w-full border border-slate-300 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900"
-        />
-      </div>
-      <div className="sm:col-span-2">
-        <label className="block text-xs font-medium text-slate-600 mb-1">Note</label>
-        <input
-          type="text"
-          value={form.note}
-          onChange={update('note')}
-          className="w-full border border-slate-300 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900"
-          placeholder="Optional"
-        />
-      </div>
-      <div className="sm:col-span-5 flex gap-2 justify-end">
-        {onCancel && (
-          <button
-            type="button"
-            onClick={onCancel}
-            className="px-3 py-1.5 text-sm rounded-md border border-slate-300 hover:bg-slate-100"
+    <form onSubmit={handleSubmit} className="card p-5">
+      <div className="grid gap-4 sm:grid-cols-12">
+        <div className="sm:col-span-3">
+          <label className="label block mb-1.5">Amount</label>
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-muted text-sm">
+              $
+            </span>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              required
+              value={form.amount}
+              onChange={update('amount')}
+              placeholder="0.00"
+              className="input pl-7 font-mono tabular-nums"
+            />
+          </div>
+        </div>
+
+        <div className="sm:col-span-3">
+          <label className="label block mb-1.5">Category</label>
+          <select
+            value={form.category}
+            onChange={update('category')}
+            className="input cursor-pointer"
           >
+            {CATEGORIES.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="sm:col-span-3">
+          <label className="label block mb-1.5">Date</label>
+          <input
+            type="date"
+            required
+            value={form.date}
+            onChange={update('date')}
+            className="input font-mono"
+          />
+        </div>
+
+        <div className="sm:col-span-3">
+          <label className="label block mb-1.5">Note</label>
+          <input
+            type="text"
+            value={form.note}
+            onChange={update('note')}
+            placeholder="Optional"
+            className="input"
+          />
+        </div>
+      </div>
+
+      <div className="flex items-center justify-end gap-2 mt-5 pt-4 border-t border-border">
+        {onCancel && (
+          <button type="button" onClick={onCancel} className="btn btn-ghost">
             Cancel
           </button>
         )}
-        <button
-          type="submit"
-          disabled={busy}
-          className="px-3 py-1.5 text-sm rounded-md bg-slate-900 text-white hover:bg-slate-800 disabled:opacity-50"
-        >
-          {busy ? 'Saving...' : submitLabel}
+        <button type="submit" disabled={busy} className="btn btn-primary">
+          {busy ? (
+            'Saving…'
+          ) : (
+            <>
+              {submitLabel}
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M5 12h14M13 5l7 7-7 7" />
+              </svg>
+            </>
+          )}
         </button>
       </div>
     </form>
