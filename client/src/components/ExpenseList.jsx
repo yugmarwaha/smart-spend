@@ -3,7 +3,7 @@ import ExpenseRow from './ExpenseRow.jsx';
 import { formatCurrency } from '../lib/format.js';
 import { TableRowSkeleton } from './Skeleton.jsx';
 
-function EmptyState() {
+function EmptyState({ filtered }) {
   return (
     <div className="card p-12 text-center">
       <div className="w-12 h-12 rounded-xl bg-surface-2 border border-border-2 grid place-items-center mx-auto mb-4 text-fg-muted">
@@ -12,16 +12,24 @@ function EmptyState() {
           <path d="M16 2v4M8 2v4M3 10h18" />
         </svg>
       </div>
-      <div className="text-fg font-medium">No transactions yet</div>
+      <div className="text-fg font-medium">
+        {filtered ? 'No matching transactions' : 'No transactions yet'}
+      </div>
       <div className="text-sm text-fg-muted mt-1">
-        Add your first transaction above to get started.
+        {filtered
+          ? 'Try clearing or adjusting the filters above.'
+          : 'Add your first transaction above to get started.'}
       </div>
     </div>
   );
 }
 
-export default function ExpenseList() {
-  const { data, isLoading, isError, error } = useExpenses();
+export default function ExpenseList({ expenses: providedExpenses, totalCount }) {
+  const query = useExpenses();
+  const data = providedExpenses ?? query.data;
+  const isLoading = providedExpenses === undefined && query.isLoading;
+  const isError = providedExpenses === undefined && query.isError;
+  const error = query.error;
 
   if (isLoading) {
     return (
@@ -63,8 +71,10 @@ export default function ExpenseList() {
   }
 
   const expenses = data ?? [];
+  const isFiltered =
+    typeof totalCount === 'number' && totalCount > 0 && expenses.length !== totalCount;
 
-  if (expenses.length === 0) return <EmptyState />;
+  if (expenses.length === 0) return <EmptyState filtered={isFiltered} />;
 
   const sorted = [...expenses].sort(
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
@@ -75,9 +85,12 @@ export default function ExpenseList() {
     <div className="card overflow-hidden">
       <div className="flex items-center justify-between px-5 py-4 border-b border-border">
         <div>
-          <h3 className="text-sm font-semibold text-fg">All transactions</h3>
+          <h3 className="text-sm font-semibold text-fg">
+            {isFiltered ? 'Filtered transactions' : 'All transactions'}
+          </h3>
           <div className="text-xs text-fg-muted mt-0.5">
-            {sorted.length} {sorted.length === 1 ? 'entry' : 'entries'} ·{' '}
+            {sorted.length} {sorted.length === 1 ? 'entry' : 'entries'}
+            {isFiltered && ` of ${totalCount}`} ·{' '}
             <span className="text-fg-2 font-mono tabular-nums">
               {formatCurrency(total)}
             </span>{' '}
