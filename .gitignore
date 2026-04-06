@@ -24,6 +24,10 @@ build/
 venv/
 env/
 
+# ML model artifacts
+*.joblib
+*.pkl
+
 # Python testing & tooling
 .pytest_cache/
 .mypy_cache/

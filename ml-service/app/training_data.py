@@ -1,0 +1,87 @@
+"""Tiny built-in training set for the category classifier.
+
+This is intentionally small but covers each category with a handful of examples.
+Replace with real user data once enough exists.
+"""
+
+TRAINING_DATA: list[tuple[str, str]] = [
+    # Food
+    ("groceries trader joes", "Food"),
+    ("coffee starbucks latte", "Food"),
+    ("lunch chipotle burrito", "Food"),
+    ("dinner sushi takeout", "Food"),
+    ("pizza delivery", "Food"),
+    ("bagel breakfast", "Food"),
+    ("whole foods produce", "Food"),
+    ("restaurant tip", "Food"),
+    ("mcdonalds drive thru", "Food"),
+    ("snacks at 7-eleven", "Food"),
+    # Transport
+    ("uber to airport", "Transport"),
+    ("lyft ride home", "Transport"),
+    ("subway monthly pass", "Transport"),
+    ("metro card refill", "Transport"),
+    ("gas shell station", "Transport"),
+    ("parking garage downtown", "Transport"),
+    ("train ticket nyc", "Transport"),
+    ("bus fare", "Transport"),
+    ("taxi from hotel", "Transport"),
+    ("car wash", "Transport"),
+    # Rent
+    ("monthly rent", "Rent"),
+    ("apartment rent april", "Rent"),
+    ("rent payment to landlord", "Rent"),
+    ("housing rent", "Rent"),
+    ("rent venmo", "Rent"),
+    # Entertainment
+    ("netflix subscription", "Entertainment"),
+    ("spotify monthly", "Entertainment"),
+    ("movie ticket amc", "Entertainment"),
+    ("concert ticket", "Entertainment"),
+    ("video game steam", "Entertainment"),
+    ("hbo max subscription", "Entertainment"),
+    ("museum admission", "Entertainment"),
+    ("theater play broadway", "Entertainment"),
+    ("disney plus annual", "Entertainment"),
+    ("comedy club cover", "Entertainment"),
+    # Utilities
+    ("electric bill", "Utilities"),
+    ("internet comcast", "Utilities"),
+    ("water bill municipal", "Utilities"),
+    ("gas bill heating", "Utilities"),
+    ("verizon phone bill", "Utilities"),
+    ("at&t wireless", "Utilities"),
+    ("internet bill spectrum", "Utilities"),
+    ("trash collection fee", "Utilities"),
+    ("electricity con edison", "Utilities"),
+    # Shopping
+    ("amazon order", "Shopping"),
+    ("new shoes nike", "Shopping"),
+    ("clothes zara", "Shopping"),
+    ("ikea furniture", "Shopping"),
+    ("target household items", "Shopping"),
+    ("electronics best buy", "Shopping"),
+    ("headphones sony", "Shopping"),
+    ("kitchen supplies", "Shopping"),
+    ("book barnes noble", "Shopping"),
+    ("home depot tools", "Shopping"),
+    # Health
+    ("pharmacy cvs", "Health"),
+    ("doctor visit copay", "Health"),
+    ("dentist cleaning", "Health"),
+    ("gym membership", "Health"),
+    ("therapist session", "Health"),
+    ("vitamins supplements", "Health"),
+    ("yoga class", "Health"),
+    ("prescription refill", "Health"),
+    ("eye exam", "Health"),
+    ("urgent care visit", "Health"),
+    # Other
+    ("birthday gift", "Other"),
+    ("donation charity", "Other"),
+    ("tip jar", "Other"),
+    ("misc cash", "Other"),
+    ("haircut barber", "Other"),
+    ("dry cleaning", "Other"),
+    ("postage stamps", "Other"),
+]
