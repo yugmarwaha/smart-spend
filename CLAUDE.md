@@ -34,3 +34,8 @@ SmartSpend is a personal finance/expense tracking application with a three-servi
 - Client uses Axios for HTTP requests and TanStack React Query for server state management
 - No monorepo tooling — each service has its own `package.json` and `node_modules`; install dependencies separately in each directory
 - ESLint rule: unused vars starting with uppercase or underscore are allowed (`varsIgnorePattern: '^[A-Z_]'`)
+
+## Commit Conventions
+
+- Commit incrementally — make a separate commit for each logical change instead of batching unrelated work
+- Write commit messages in no more than two lines
