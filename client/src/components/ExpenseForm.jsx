@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useId, useMemo, useState } from 'react';
 import { CATEGORIES } from '../lib/categories.js';
 import { useCategorySuggestion } from '../hooks/useCategorySuggestion.js';
 
@@ -53,6 +53,12 @@ export default function ExpenseForm({
   submitLabel = 'Add transaction',
   busy = false,
 }) {
+  const ids = {
+    amount: useId(),
+    category: useId(),
+    date: useId(),
+    note: useId(),
+  };
   const [form, setForm] = useState(() => buildInitialForm(initial));
   const [touched, setTouched] = useState({});
   const [acceptedSuggestion, setAcceptedSuggestion] = useState(false);
@@ -114,12 +120,13 @@ export default function ExpenseForm({
     <form onSubmit={handleSubmit} className="card p-5" noValidate>
       <div className="grid gap-4 sm:grid-cols-12">
         <div className="sm:col-span-3">
-          <label className="label block mb-1.5">Amount</label>
+          <label htmlFor={ids.amount} className="label block mb-1.5">Amount</label>
           <div className="relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-muted text-sm">
               $
             </span>
             <input
+              id={ids.amount}
               type="number"
               step="0.01"
               min="0"
@@ -135,8 +142,9 @@ export default function ExpenseForm({
         </div>
 
         <div className="sm:col-span-3">
-          <label className="label block mb-1.5">Category</label>
+          <label htmlFor={ids.category} className="label block mb-1.5">Category</label>
           <select
+            id={ids.category}
             value={form.category}
             onChange={update('category')}
             className="input cursor-pointer"
@@ -150,8 +158,9 @@ export default function ExpenseForm({
         </div>
 
         <div className="sm:col-span-3">
-          <label className="label block mb-1.5">Date</label>
+          <label htmlFor={ids.date} className="label block mb-1.5">Date</label>
           <input
+            id={ids.date}
             type="date"
             value={form.date}
             onChange={update('date')}
@@ -163,8 +172,9 @@ export default function ExpenseForm({
         </div>
 
         <div className="sm:col-span-3">
-          <label className="label block mb-1.5">Note</label>
+          <label htmlFor={ids.note} className="label block mb-1.5">Note</label>
           <input
+            id={ids.note}
             type="text"
             value={form.note}
             onChange={handleNoteChange}
