@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { CATEGORIES } from '../lib/categories.js';
+import { useCategorySuggestion } from '../hooks/useCategorySuggestion.js';
 
 const todayISO = () => new Date().toISOString().slice(0, 10);
 
@@ -54,9 +55,24 @@ export default function ExpenseForm({
 }) {
   const [form, setForm] = useState(() => buildInitialForm(initial));
   const [touched, setTouched] = useState({});
+  const [acceptedSuggestion, setAcceptedSuggestion] = useState(false);
 
   const errors = useMemo(() => validate(form), [form]);
   const isValid = Object.keys(errors).length === 0;
+
+  const suggestion = useCategorySuggestion(form.note, {
+    enabled: !initial && !acceptedSuggestion,
+  });
+  const showSuggestion =
+    suggestion &&
+    suggestion.category !== form.category &&
+    suggestion.confidence >= 0.25;
+
+  const acceptSuggestion = () => {
+    if (!suggestion) return;
+    setForm((f) => ({ ...f, category: suggestion.category }));
+    setAcceptedSuggestion(true);
+  };
 
   const update = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
   const blur = (key) => () => setTouched((t) => ({ ...t, [key]: true }));
@@ -74,7 +90,13 @@ export default function ExpenseForm({
     if (!initial) {
       setForm(buildInitialForm(null));
       setTouched({});
+      setAcceptedSuggestion(false);
     }
+  };
+
+  const handleNoteChange = (e) => {
+    setAcceptedSuggestion(false);
+    setForm((f) => ({ ...f, note: e.target.value }));
   };
 
   const fieldClass = (key) =>
@@ -145,13 +167,28 @@ export default function ExpenseForm({
           <input
             type="text"
             value={form.note}
-            onChange={update('note')}
+            onChange={handleNoteChange}
             onBlur={blur('note')}
             placeholder="Optional"
             aria-invalid={!!(touched.note && errors.note)}
             className={fieldClass('note')}
           />
           {errorFor('note')}
+          {showSuggestion && (
+            <button
+              type="button"
+              onClick={acceptSuggestion}
+              className="mt-1.5 inline-flex items-center gap-1.5 text-xs text-fg-muted hover:text-fg transition-colors group"
+            >
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-accent">
+                <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
+              </svg>
+              Try{' '}
+              <span className="text-fg-2 font-medium underline decoration-dotted underline-offset-2 group-hover:text-fg">
+                {suggestion.category}
+              </span>
+            </button>
+          )}
         </div>
       </div>
 
