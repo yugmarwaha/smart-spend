@@ -1,0 +1,9 @@
+node_modules/
+dist/
+build/
+.venv/
+venv/
+**/coverage/
+**/package-lock.json
+ml-service/
+plan.md
