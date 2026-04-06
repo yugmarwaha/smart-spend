@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import CommandPalette from './CommandPalette.jsx';
 
 const navLinkClass = ({ isActive }) =>
   [
@@ -60,6 +61,7 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen flex flex-col bg-bg text-fg">
+      <CommandPalette />
       <header className="sticky top-0 z-40 backdrop-blur-xl bg-bg/70 border-b border-border">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4 sm:gap-6">
           <Logo />
